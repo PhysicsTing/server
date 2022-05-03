@@ -6287,14 +6287,15 @@ int THD::decide_logging_format(TABLE_LIST *tables)
 
 int THD::decide_logging_format_low(TABLE *table)
 {
+  DBUG_ENTER("decide_logging_format_low");
   /*
-   INSERT...ON DUPLICATE KEY UPDATE on a table with more than one unique keys
-   can be unsafe.
-   */
-  if(wsrep_binlog_format() <= BINLOG_FORMAT_STMT &&
+    INSERT...ON DUPLICATE KEY UPDATE on a table with more than one unique keys
+    can be unsafe.
+  */
+  enum_binlog_format bf= (enum_binlog_format) wsrep_binlog_format();
+  if(bf <= BINLOG_FORMAT_STMT &&
        !is_current_stmt_binlog_format_row() &&
        !lex->is_stmt_unsafe() &&
-       lex->sql_command == SQLCOM_INSERT &&
        lex->duplicates == DUP_UPDATE)
   {
     uint unique_keys= 0;
@@ -6319,13 +6320,16 @@ exit:;
 
     if (unique_keys > 1)
     {
-      lex->set_stmt_unsafe(LEX::BINLOG_STMT_UNSAFE_INSERT_TWO_KEYS);
-      binlog_unsafe_warning_flags|= lex->get_stmt_unsafe_flags();
+      if (bf == BINLOG_FORMAT_STMT)
+      {
+        lex->set_stmt_unsafe(LEX::BINLOG_STMT_UNSAFE_INSERT_TWO_KEYS);
+        binlog_unsafe_warning_flags|= lex->get_stmt_unsafe_flags();
+      }
       set_current_stmt_binlog_format_row_if_mixed();
-      return 1;
+      DBUG_RETURN(1);
     }
   }
-  return 0;
+  DBUG_RETURN(0);
 }
 
 /*

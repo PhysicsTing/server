@@ -1,0 +1,46 @@
+--source include/have_innodb.inc
+--source include/master-slave.inc
+
+if (`select @@binlog_format = "statement"`)
+{
+  call mtr.add_suppression("Unsafe statement written to the binary log using statement");
+}
+
+## MDEV-28310 loss of binlog event for unsafe multi-record IODKU
+#   MDEV-17614 fixes appeared to have a flaw in the multi-record
+#   INSERT ON DUP KEY UPDATE when the dup errored out record was not
+#   the last. In case of MIXED @@binlog_format no replication event
+#   get logged.
+#
+
+CREATE TABLE t1 (id INT PRIMARY KEY AUTO_INCREMENT, a INT, b INT, c INT,
+                 UNIQUE (a), UNIQUE (b)) ENGINE=innodb;
+INSERT INTO t1 (`a`,`c`) VALUES (1,1), (2,1) ON DUPLICATE KEY UPDATE c = 1;
+INSERT INTO t1 (`a`,`c`) VALUES (3, 1),(2,1), (1,1) ON DUPLICATE KEY UPDATE c = 1;
+SELECT * from t1;
+
+--sync_slave_with_master
+--let $diff_tables = master:t1,slave:t1
+--source include/diff_tables.inc
+
+## MDEV-21810 MBR: Unexpected "Unsafe statement" warning for unsafe IODKU
+#   Unnecessary unsafe statement warning is not error-logged anymore.
+
+
+--connection master
+CREATE OR REPLACE TABLE t1 (a INT, b INT, UNIQUE (a), UNIQUE (b)) ENGINE=innodb;
+INSERT INTO t1 VALUES (1,10);
+INSERT INTO t1 VALUES (2,20) ON DUPLICATE KEY UPDATE b = 30;
+SELECT * from t1;
+
+--sync_slave_with_master
+--let $diff_tables = master:t1,slave:t1
+--source include/diff_tables.inc
+
+# Cleanup
+--connection master
+DROP TABLE t1;
+--sync_slave_with_master
+
+
+--source include/rpl_end.inc
