@@ -62,10 +62,8 @@ struct vio_keepalive_opts
 };
 
 
-#define VIO_TLSv1_0   1
-#define VIO_TLSv1_1   2
-#define VIO_TLSv1_2   4
-#define VIO_TLSv1_3   8
+#define VIO_TLSv1_2   1
+#define VIO_TLSv1_3   2
 
 #define VIO_LOCALHOST 1U                        /* a localhost connection */
 #define VIO_BUFFERED_READ 2U                    /* use buffered read */

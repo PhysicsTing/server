@@ -1,6 +1,6 @@
 Variable_name	Value
-Ssl_version	TLSv1
+Ssl_version	TLSv1.2
 Variable_name	Value
-Ssl_version	TLSv1
+Ssl_version	TLSv1.2
 @@tls_version
-TLSv1.0
+TLSv1.2

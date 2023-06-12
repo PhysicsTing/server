@@ -187,6 +187,10 @@ static int wolfssl_send(WOLFSSL* ssl, char* buf, int sz, void* vio)
 
 static long vio_tls_protocol_options(ulonglong tls_version)
 {
+#if !defined(TLS1_3_VERSION) && !defined(TLS1_2_VERSION) && !defined(HAVE_WOLFSSL)
+#warning Latest version of MariaDB server requires TLS version >= TLSv1.2 to enable secured connection
+#endif
+
    long tls_protocol_flags=
 #ifdef TLS1_3_VERSION
     SSL_OP_NO_TLSv1_3 |
@@ -202,10 +206,6 @@ static long vio_tls_protocol_options(ulonglong tls_version)
   if (!tls_version)
     return disabled_ssl_protocols;
 
-  if (tls_version & VIO_TLSv1_0)
-    disabled_tls_protocols&= ~SSL_OP_NO_TLSv1;
-  if (tls_version & VIO_TLSv1_1)
-    disabled_tls_protocols&= ~SSL_OP_NO_TLSv1_1;
 #if defined(TLS1_2_VERSION) || defined(HAVE_WOLFSSL)
   if (tls_version & VIO_TLSv1_2)
     disabled_tls_protocols&= ~SSL_OP_NO_TLSv1_2;

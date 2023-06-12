@@ -1,14 +1,11 @@
+connect  conn1,localhost,root,,,,,SSL;
+Variable_name	Value
+Ssl_version	TLSv1.3
+Variable_name	Value
+Ssl_version	TLSv1.3
 Variable_name	Value
 Ssl_version	TLSv1.2
 Variable_name	Value
-Ssl_version	TLSv1.2
-Variable_name	Value
-Ssl_version	TLSv1.1
-Variable_name	Value
-Ssl_version	TLSv1.1
-Variable_name	Value
-Ssl_version	TLSv1.2
-Variable_name	Value
-Ssl_version	TLSv1.2
+Ssl_version	TLSv1.3
 @@tls_version
-TLSv1.1,TLSv1.2
+TLSv1.2,TLSv1.3

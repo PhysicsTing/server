@@ -1,12 +1,25 @@
 # Tests for SSL connections, only run if mysqld is compiled
 # with support for SSL.
 
+# See tls_version.test for different between tls_version.test
+# and tls_version1.test
+
 -- source include/have_ssl_communication.inc
 --exec $MYSQL --host=localhost --ssl -e "show status like 'ssl_version';"
+
+# TLSv1.3 is not enabled, so TLSv1.2 should be used
+--exec $MYSQL --host=localhost --ssl --tls_version=TLSv1.2,TLSv1.3 -e "show status like 'ssl_version';"
+
+# Errors:
+# TLS v1.3 is disabled on server, so we should get an error
 --error 1
---exec $MYSQL --host=localhost --ssl --tls_version=TLSv1.2 -e "show status like 'ssl_version';"
+--exec $MYSQL --host=localhost --ssl --tls_version=TLSv1.3 -e "show status like 'ssl_version';"
+
+# Errors:
+# TLS v1.0 and TLSv1.1 are deprecated on server, so we should get an error
 --error 1
 --exec $MYSQL --host=localhost --ssl --tls_version=TLSv1.1 -e "show status like 'ssl_version';"
+--error 1
 --exec $MYSQL --host=localhost --ssl --tls_version=TLSv1.0 -e "show status like 'ssl_version';"
---exec $MYSQL --host=localhost --ssl -e "select @@tls_version;"
 
+--exec $MYSQL --host=localhost --ssl -e "select @@tls_version;"
